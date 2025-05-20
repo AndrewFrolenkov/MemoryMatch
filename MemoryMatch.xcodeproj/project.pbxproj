@@ -11,9 +11,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		52AEE3012DD7835D0008AF05 /* TrainSpriteKit */ = {
+		52AEE3012DD7835D0008AF05 /* MemoryMatch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TrainSpriteKit;
+			path = MemoryMatch;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		52AEE2F62DD7835C0008AF05 = {
 			isa = PBXGroup;
 			children = (
-				52AEE3012DD7835D0008AF05 /* TrainSpriteKit */,
+				52AEE3012DD7835D0008AF05 /* MemoryMatch */,
 				52AEE3002DD7835D0008AF05 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -61,7 +61,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				52AEE3012DD7835D0008AF05 /* TrainSpriteKit */,
+				52AEE3012DD7835D0008AF05 /* MemoryMatch */,
 			);
 			name = TrainSpriteKit;
 			packageProductDependencies = (
@@ -85,7 +85,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 52AEE2FA2DD7835C0008AF05 /* Build configuration list for PBXProject "TrainSpriteKit" */;
+			buildConfigurationList = 52AEE2FA2DD7835C0008AF05 /* Build configuration list for PBXProject "MemoryMatch" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -266,7 +266,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.andrewIssues.TrainSpriteKit;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewIssues.MemoryMatch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -294,7 +294,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.andrewIssues.TrainSpriteKit;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewIssues.MemoryMatch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -305,7 +305,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		52AEE2FA2DD7835C0008AF05 /* Build configuration list for PBXProject "TrainSpriteKit" */ = {
+		52AEE2FA2DD7835C0008AF05 /* Build configuration list for PBXProject "MemoryMatch" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				52AEE3142DD7835F0008AF05 /* Debug */,
