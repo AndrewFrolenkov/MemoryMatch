@@ -9,26 +9,52 @@ import SpriteKit
 
 class GameScene: SKScene {
     
-    var cards: [CardModel] = []
-    var firstFlippedCardIndex: Int? = nil
-    
     private let viewModel = GameViewModel()
     
     var infoBackground: InfoBackgroundNode!
     var settingsButton: SKButton!
+    var pauseButton: SKButton!
+    var backButton: SKButton!
+    var restartButton: SKButton!
+    
+    var isGamePaused = false
     
     override func didMove(to view: SKView) {
         
         setupUI()
         setupBindings()
-        viewModel.startTimer()
+        viewModel.startNewGame()
         setupCards()
-        
-        
     }
     
-    private func setupUI() {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard !isGamePaused else { return }
+        guard let touch = touches.first else { return }
+            let location = touch.location(in: self)
+            guard let node = nodes(at: location).first as? SKSpriteNode,
+                  let index = Int(node.name ?? "") else { return }
 
+            viewModel.handleCardTap(at: index)
+    }
+    
+    func showWin() {
+        
+        viewModel.stopTimer()
+        
+        let overlay = WinOverlayNode(size: size, moves: viewModel.moves, timeElapsed: infoBackground.timeLabel.text ?? "00:00")
+        addChild(overlay)
+    }
+    
+    deinit {
+       
+        print("GameScene DEINIT — сцена удалена из памяти ✅")
+    }
+}
+
+extension GameScene {
+    
+    private func setupUI() {
+        
         let background = SKSpriteNode(imageNamed: "background")
         background.position = .zero
         background.size = size
@@ -45,6 +71,34 @@ class GameScene: SKScene {
         )
         addChild(settingsButton)
         
+        pauseButton = SKButton(imageNamed: "Pause", size: buttonSize) { [weak self] in
+            print("Кнопка нажата")
+            self?.togglePause()
+        }
+        pauseButton.position = CGPoint(
+            x: -size.width / 2 + pxToPoints(60) + buttonSize.width / 2,
+            y: -size.height / 2 + pxToPoints(250) + buttonSize.height / 2
+        )
+        addChild(pauseButton)
+        
+        backButton = SKButton(imageNamed: "Left", size: buttonSize) {
+            print("Кнопка нажата")
+        }
+        backButton.position = CGPoint(
+            x: 0,
+            y: -size.height / 2 + pxToPoints(250) + buttonSize.height / 2
+        )
+        addChild(backButton)
+        
+        restartButton = SKButton(imageNamed: "Undo", size: buttonSize) { [weak self] in
+            self?.restartGame()
+        }
+        restartButton.position = CGPoint(
+            x: size.width / 2 - pxToPoints(60) - buttonSize.width / 2,
+            y: -size.height / 2 + pxToPoints(250) + buttonSize.height / 2
+        )
+        addChild(restartButton)
+        
         let infoSize = CGSize(width: size.width - pxToPoints(50), height: 50)
         infoBackground = InfoBackgroundNode(size: infoSize)
         infoBackground.position = CGPoint(
@@ -53,18 +107,6 @@ class GameScene: SKScene {
         )
         addChild(infoBackground)
     }
-    
-    
-    private func setupBindings() {
-        viewModel.onTimeUpdate = { [weak self] timeString in
-            self?.infoBackground.updateTime(timeString)
-        }
-        
-        viewModel.onMovesUpdate = { [weak self] moves in
-            self?.infoBackground.updateMoves(moves)
-        }
-    }
-    
     
     func setupCards() {
         let cardDataArray = viewModel.generateCardData()
@@ -89,60 +131,53 @@ class GameScene: SKScene {
                 sprite.name = "\(index)"
                 
                 let card = CardModel(id: cardData.id, imageName: cardData.imageName, node: sprite)
-                cards.append(card)
+                viewModel.cards.append(card)
                 addChild(sprite)
             }
         }
     }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first else { return }
-        let location = touch.location(in: self)
-        guard let node = nodes(at: location).first as? SKSpriteNode,
-              let index = Int(node.name ?? ""),
-              !cards[index].isFlipped,
-              !cards[index].isMatched else { return }
+}
+
+extension GameScene {
+    private func setupBindings() {
+        viewModel.onTimeUpdate = { [weak self] timeString in
+            self?.infoBackground.updateTime(timeString)
+        }
         
-        flipCardOpen(at: index)
+        viewModel.onMovesUpdate = { [weak self] moves in
+            self?.infoBackground.updateMoves(moves)
+        }
         
-        if firstFlippedCardIndex == nil {
-            firstFlippedCardIndex = index
-        } else {
-            viewModel.incrementMoves()
-            let firstIndex = firstFlippedCardIndex!
-            let secondIndex = index
-            
-            let firstImage = cards[firstIndex].imageName
-            let secondImage = cards[secondIndex].imageName
-            
-            if firstImage == secondImage {
-                // Успешное совпадение
-                cards[firstIndex].isMatched = true
-                cards[secondIndex].isMatched = true
-                firstFlippedCardIndex = nil
-                
-                if cards.allSatisfy({ $0.isMatched }) {
-                    isUserInteractionEnabled = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.showWin()
-                        self.isUserInteractionEnabled = true
-                    }
-                }
-            } else {
-                // Несовпадение — закрыть через 1 сек
-                isUserInteractionEnabled = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    self.flipCardClose(at: firstIndex)
-                    self.flipCardClose(at: secondIndex)
-                    self.firstFlippedCardIndex = nil
-                    self.isUserInteractionEnabled = true
-                }
+        viewModel.onFlipCard = { [weak self] index in
+            self?.flipCardOpen(at: index)
+        }
+        
+//        viewModel.onMatch = { [weak self] _, _ in
+//
+//        }
+        
+        viewModel.onMismatch = { [weak self] first, second in
+            self?.isUserInteractionEnabled = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self?.flipCardClose(at: first)
+                self?.flipCardClose(at: second)
+                self?.isUserInteractionEnabled = true
+            }
+        }
+        
+        viewModel.onGameCompleted = { [weak self] in
+            self?.isUserInteractionEnabled = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self?.showWin()
+                self?.isUserInteractionEnabled = true
             }
         }
     }
-    
-    func flipCardOpen(at index: Int) {
-        let card = cards[index]
+}
+
+extension GameScene {
+   private func flipCardOpen(at index: Int) {
+        let card = viewModel.cards[index]
         let node = card.node
         
         // Прокрутка: 6 кадров случайных картинок перед финальной
@@ -167,11 +202,11 @@ class GameScene: SKScene {
         let fullEffect = SKAction.sequence(textures + [finalTexture, move])
         node.run(fullEffect)
         
-        cards[index].isFlipped = true
+        viewModel.cards[index].isFlipped = true
     }
     
-    func flipCardClose(at index: Int) {
-        let node = cards[index].node
+   private func flipCardClose(at index: Int) {
+        let node = viewModel.cards[index].node
         
         let flipHalf = SKAction.scaleX(to: 0, duration: 0.2)
         let changeTexture = SKAction.run {
@@ -181,14 +216,23 @@ class GameScene: SKScene {
         let sequence = SKAction.sequence([flipHalf, changeTexture, flipBack])
         
         node.run(sequence)
-        cards[index].isFlipped = false
+        viewModel.cards[index].isFlipped = false
+    }
+}
+
+extension GameScene {
+    func togglePause() {
+        isGamePaused.toggle()
+        self.isPaused = isGamePaused
+        viewModel.setPause(isGamePaused)
     }
     
-    func showWin() {
-        
-        viewModel.stopTimer()
-        
-        let overlay = WinOverlayNode(size: size, moves: viewModel.moves, timeElapsed: infoBackground.timeLabel.text ?? "00:00")
-        addChild(overlay)
+    func restartGame() {
+        if let view = self.view {
+            let newScene = GameScene(size: view.bounds.size)
+            newScene.scaleMode = .resizeFill
+            newScene.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+            view.presentScene(newScene, transition: SKTransition.fade(withDuration: 0.5))
+        }
     }
 }

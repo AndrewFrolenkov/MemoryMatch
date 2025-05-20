@@ -23,7 +23,7 @@ class SKButton: SKSpriteNode {
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        self.alpha = 0.7 // легкий эффект нажатия
+        self.alpha = 0.7
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
