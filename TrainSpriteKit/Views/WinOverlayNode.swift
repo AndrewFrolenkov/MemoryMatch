@@ -18,14 +18,12 @@ class WinOverlayNode: SKNode {
     init(size: CGSize, moves: Int, timeElapsed: String) {
         super.init()
         
-        // Полупрозрачный фон
         let dimBackground = SKSpriteNode(color: .black, size: size)
         dimBackground.alpha = 0.6
         dimBackground.position = CGPoint(x: 0, y: 0)
         dimBackground.zPosition = 100
         addChild(dimBackground)
         
-        // Окно победы
         let winBackground = SKSpriteNode(imageNamed: "BG_3 Parallax")
         winBackground.size = CGSize(width: size.width, height: size.height)
         winBackground.position = CGPoint(x: 0, y: 0)
@@ -44,7 +42,6 @@ class WinOverlayNode: SKNode {
         youWin.zPosition = 103
         addChild(youWin)
         
-        // Количество ходов
         let movesLabel = SKLabelNode(text: "MOVIES: \(moves)")
         movesLabel.fontName = "Helvetica"
         movesLabel.fontSize = calculatefont(51)
@@ -53,7 +50,6 @@ class WinOverlayNode: SKNode {
         movesLabel.zPosition = 102
         winBoard.addChild(movesLabel)
         
-        // Время
         let timeLabel = SKLabelNode(text: "TIME: \(timeElapsed)")
         timeLabel.fontName = "Helvetica"
         timeLabel.fontSize = calculatefont(51)
@@ -82,10 +78,6 @@ class WinOverlayNode: SKNode {
         )
         menuButton.zPosition = 103
         addChild(menuButton)
-        
-        
-        
-        
     }
     
     required init?(coder aDecoder: NSCoder) {

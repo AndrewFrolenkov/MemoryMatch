@@ -6,6 +6,7 @@
 //
 
 import SpriteKit
+import AudioToolbox
 
 class GameScene: SKScene {
     
@@ -18,6 +19,8 @@ class GameScene: SKScene {
     var restartButton: SKButton!
     
     var isGamePaused = false
+    var isVibrationEnabled = true
+    var isSoundEnabled = true
     
     override func didMove(to view: SKView) {
         
@@ -55,15 +58,17 @@ class GameScene: SKScene {
     
     func showSettings() {
         
-        let settings = SettingsNote(size: size)
+        let settings = SettingsNote(size: size, isSoundEnabled: isSoundEnabled, isVibrationEnabled: isVibrationEnabled)
         addChild(settings)
         
         settings.onVolumeButtonTapped = { [weak self] in
-            
+            guard let self = self else { return }
+            self.isSoundEnabled.toggle()
         }
         
         settings.onVibroButtonTapped = { [weak self] in
-            
+            guard let self = self else { return }
+            self.isVibrationEnabled.toggle()
         }
         
         settings.continueGameButtonTapped = { [weak self] in
@@ -185,11 +190,23 @@ extension GameScene {
         //        }
         
         viewModel.onMismatch = { [weak self] first, second in
-            self?.isUserInteractionEnabled = false
+            guard let self = self else { return }
+            if self.isVibrationEnabled {
+#if os(iOS)
+                let generator = UIImpactFeedbackGenerator(style: .heavy)
+                generator.impactOccurred()
+#endif
+            }
+            
+            if self.isSoundEnabled {
+                    self.playErrorSound()
+                }
+            
+            self.isUserInteractionEnabled = false
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                self?.flipCardClose(at: first)
-                self?.flipCardClose(at: second)
-                self?.isUserInteractionEnabled = true
+                self.flipCardClose(at: first)
+                self.flipCardClose(at: second)
+                self.isUserInteractionEnabled = true
             }
         }
         
@@ -208,7 +225,6 @@ extension GameScene {
         let card = viewModel.cards[index]
         let node = card.node
         
-        // Прокрутка: 6 кадров случайных картинок перед финальной
         var textures: [SKAction] = []
         for _ in 0..<6 {
             let randomIndex = Int.random(in: 1...8)
@@ -217,12 +233,10 @@ extension GameScene {
             textures.append(SKAction.wait(forDuration: 0.05))
         }
         
-        // Финальная картинка
         let finalTexture = SKAction.run {
             node.texture = SKTexture(imageNamed: card.imageName)
         }
         
-        // Добавим небольшое движение вниз и вверх для эффекта
         let moveDown = SKAction.moveBy(x: 0, y: -5, duration: 0.05)
         let moveUp = SKAction.moveBy(x: 0, y: 5, duration: 0.05)
         let move = SKAction.sequence([moveDown, moveUp])
@@ -274,5 +288,11 @@ extension GameScene {
             newScene.anchorPoint = CGPoint(x: 0.5, y: 0.5)
             view.presentScene(newScene, transition: SKTransition.push(with: .right, duration: 0.5))
         }
+    }
+    
+    func playErrorSound() {
+    #if os(iOS)
+        AudioServicesPlaySystemSound(SystemSoundID(1053))
+    #endif
     }
 }

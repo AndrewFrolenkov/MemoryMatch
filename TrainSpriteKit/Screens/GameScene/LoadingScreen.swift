@@ -20,7 +20,7 @@ extension LoadingScene {
         addChild(background)
         
         fireSprite = SKSpriteNode(imageNamed: "Fire")
-        fireSprite.size = CGSize(width: 100, height: 100) // можно менять размер по желанию
+        fireSprite.size = CGSize(width: 300, height: 300)
         fireSprite.position = CGPoint(x: 0, y: size.height / 2)
         fireSprite.zPosition = 1
         addChild(fireSprite)
@@ -50,7 +50,6 @@ extension LoadingScene {
     }
     
     private func loadingFinished() {
-        // Остановим анимацию, плавно скроем огонёк и лейбл
         fireSprite.removeAllActions()
         let fadeOut = SKAction.fadeOut(withDuration: 0.5)
         fireSprite.run(fadeOut)

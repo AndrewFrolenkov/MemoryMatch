@@ -14,9 +14,10 @@ class SettingsNote: SKNode {
     var onVolumeButtonTapped: (() -> Void)?
     var continueGameButtonTapped: (() -> Void)?
     
-    init(size: CGSize) {
+    init(size: CGSize, isSoundEnabled: Bool, isVibrationEnabled: Bool) {
         super.init()
-        
+        self.isVolumeOn = isSoundEnabled
+        self.isVibrationOn = isVibrationEnabled
         // Полупрозрачный фон
         let dimBackground = SKSpriteNode(color: .black, size: size)
         dimBackground.alpha = 0.6
@@ -32,7 +33,7 @@ class SettingsNote: SKNode {
         addChild(winBackground)
         
         let buttonSize = CGSize(width: pxToPoints(300), height: pxToPoints(300))
-        volumeButton = SKButton(imageNamed: "VolumeOn", size: buttonSize) { [weak self] in
+        volumeButton = SKButton(imageNamed: self.isVolumeOn ? "VolumeOn" : "VolumeOff", size: buttonSize) { [weak self] in
             guard let self = self else { return }
             self.isVolumeOn.toggle()
             let newImage = self.isVolumeOn ? "VolumeOn" : "VolumeOff"
@@ -46,7 +47,7 @@ class SettingsNote: SKNode {
         volumeButton.zPosition = 103
         addChild(volumeButton)
         
-        vibroButton = SKButton(imageNamed: "VibroON", size: buttonSize) { [weak self] in
+        vibroButton = SKButton(imageNamed: self.isVibrationOn ? "VibroON" : "NoVibro", size: buttonSize) { [weak self] in
             guard let self = self else { return }
             self.isVibrationOn.toggle()
             let newImage = self.isVibrationOn ? "VibroON" : "NoVibro"
