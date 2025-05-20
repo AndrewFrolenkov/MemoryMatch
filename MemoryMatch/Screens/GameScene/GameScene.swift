@@ -87,74 +87,102 @@ class GameScene: SKScene {
 extension GameScene {
     
     private func setupUI() {
-        
+        // Фон
         let background = SKSpriteNode(imageNamed: "background")
         background.position = .zero
         background.size = size
         background.zPosition = 0
         addChild(background)
-        
-        let buttonSize = CGSize(width: pxToPoints(121), height: pxToPoints(121))
+
+        // 🔧 Относительные коэффициенты — адаптивные!
+        let buttonSide = size.width * 0.15  // 15% ширины экрана — универсально
+        let buttonSize = CGSize(width: buttonSide, height: buttonSide)
+
+        let horizontalInset = size.width * 0.06
+        let topInset = size.height * 0.08
+        let bottomInset = size.height * 0.09
+        let infoOffset = size.height * 0.18
+
+        // Settings (верхний левый угол)
         settingsButton = SKButton(imageNamed: "Settings", size: buttonSize) { [weak self] in
             self?.showSettings()
         }
         settingsButton.position = CGPoint(
-            x: -size.width / 2 + pxToPoints(60) + buttonSize.width / 2,
-            y: size.height / 2 - pxToPoints(181) - buttonSize.height / 2
+            x: -size.width / 2 + horizontalInset + buttonSide / 2,
+            y: size.height / 2 - topInset - buttonSide / 2
         )
         addChild(settingsButton)
-        
+
+        // Pause (нижний левый)
         pauseButton = SKButton(imageNamed: "Pause", size: buttonSize) { [weak self] in
             print("Кнопка нажата")
             self?.togglePause()
         }
         pauseButton.position = CGPoint(
-            x: -size.width / 2 + pxToPoints(60) + buttonSize.width / 2,
-            y: -size.height / 2 + pxToPoints(250) + buttonSize.height / 2
+            x: -size.width / 2 + horizontalInset + buttonSide / 2,
+            y: -size.height / 2 + bottomInset + buttonSide / 2
         )
         addChild(pauseButton)
-        
+
+        // Back (центр снизу)
         backButton = SKButton(imageNamed: "Left", size: buttonSize) { [weak self] in
             self?.backToMenu()
         }
         backButton.position = CGPoint(
             x: 0,
-            y: -size.height / 2 + pxToPoints(250) + buttonSize.height / 2
+            y: -size.height / 2 + bottomInset + buttonSide / 2
         )
         addChild(backButton)
-        
+
+        // Restart (правый нижний угол)
         restartButton = SKButton(imageNamed: "Undo", size: buttonSize) { [weak self] in
             self?.restartGame()
         }
         restartButton.position = CGPoint(
-            x: size.width / 2 - pxToPoints(60) - buttonSize.width / 2,
-            y: -size.height / 2 + pxToPoints(250) + buttonSize.height / 2
+            x: size.width / 2 - horizontalInset - buttonSide / 2,
+            y: -size.height / 2 + bottomInset + buttonSide / 2
         )
         addChild(restartButton)
-        
-        let infoSize = CGSize(width: size.width - pxToPoints(50), height: 50)
-        infoBackground = InfoBackgroundNode(size: infoSize)
+
+        // Инфопанель — над кнопкой settings
+        let infoHeight = size.height * 0.06
+        let infoWidth = size.width * 0.88
+        infoBackground = InfoBackgroundNode(size: CGSize(width: infoWidth, height: infoHeight))
         infoBackground.position = CGPoint(
             x: 0,
-            y: size.height / 2 - pxToPoints(360) - buttonSize.height / 2
+            y: size.height / 2 - topInset - buttonSide - infoHeight / 2 - infoOffset * 0.1
         )
         addChild(infoBackground)
     }
+
     
     func setupCards() {
         let cardDataArray = viewModel.generateCardData()
-        
-        let cardSize = CGSize(width: pxToPoints(220), height: pxToPoints(220))
-        let padding: CGFloat = 25
-        let infoBackgroundY = size.height / 2 - pxToPoints(360) - pxToPoints(121) / 2
-        let startY = infoBackgroundY - 100
-        let startX = -((cardSize.width + padding) * 1.5)
-        
-        for row in 0..<4 {
-            for col in 0..<4 {
-                let index = row * 4 + col
+
+        let cardRows = 4
+        let cardColumns = 4
+
+        let cardWidth = size.width * 0.17
+        let cardSize = CGSize(width: cardWidth, height: cardWidth)
+        let padding = size.width * 0.035
+
+        let infoBackgroundBottomY = size.height / 2 - pxToPoints(360) - pxToPoints(121) / 2
+
+        let gridHeight = CGFloat(cardRows) * cardSize.height + CGFloat(cardRows - 1) * padding
+        let minY = -size.height / 2
+        let availableHeight = infoBackgroundBottomY - minY
+
+        // Поднимаем сетку вверх на 70 пунктов
+        let startY = infoBackgroundBottomY - (availableHeight - gridHeight) / 2 + 70
+
+        let totalWidth = CGFloat(cardColumns) * cardSize.width + CGFloat(cardColumns - 1) * padding
+        let startX = -totalWidth / 2 + cardSize.width / 2
+
+        for row in 0..<cardRows {
+            for col in 0..<cardColumns {
+                let index = row * cardColumns + col
                 let cardData = cardDataArray[index]
-                
+
                 let backTexture = SKTexture(imageNamed: "cardBack")
                 let sprite = SKSpriteNode(texture: backTexture, size: cardSize)
                 sprite.position = CGPoint(
@@ -162,13 +190,14 @@ extension GameScene {
                     y: startY - CGFloat(row) * (cardSize.height + padding)
                 )
                 sprite.name = "\(index)"
-                
+
                 let card = CardModel(id: cardData.id, imageName: cardData.imageName, node: sprite)
                 viewModel.cards.append(card)
                 addChild(sprite)
             }
         }
     }
+
 }
 
 extension GameScene {
