@@ -9,6 +9,12 @@ import SpriteKit
 
 class WinOverlayNode: SKNode {
     
+    var restartButton: SKButton!
+    var menuButton: SKButton!
+    
+    var onRestartButtonTapped: (() -> Void)?
+    var backToMenuButtonTapped: (() -> Void)?
+    
     init(size: CGSize, moves: Int, timeElapsed: String) {
         super.init()
         
@@ -28,9 +34,15 @@ class WinOverlayNode: SKNode {
         
         let winBoard = SKSpriteNode(imageNamed: "board")
         winBoard.size = CGSize(width: size.width - pxToPoints(101), height: pxToPoints(462))
-        winBoard.position = CGPoint(x: 0, y: 0)
+        winBoard.position = CGPoint(x: 0, y: -size.height / 2 + pxToPoints(738) + winBoard.size.height / 2)
         winBoard.zPosition = 102
         addChild(winBoard)
+        
+        let youWin = SKSpriteNode(imageNamed: "youWin")
+        youWin.size = CGSize(width: size.width - pxToPoints(30), height: pxToPoints(1000))
+        youWin.position = CGPoint(x: 0, y: -size.height / 2 + pxToPoints(900) + youWin.size.height / 2)
+        youWin.zPosition = 103
+        addChild(youWin)
         
         // Количество ходов
         let movesLabel = SKLabelNode(text: "MOVIES: \(moves)")
@@ -49,6 +61,31 @@ class WinOverlayNode: SKNode {
         timeLabel.position = CGPoint(x: 0, y: -40)
         timeLabel.zPosition = 102
         winBoard.addChild(timeLabel)
+        
+        let buttonSize = CGSize(width: pxToPoints(121), height: pxToPoints(121))
+        restartButton = SKButton(imageNamed: "Undo", size: buttonSize) { [weak self] in
+            self?.onRestartButtonTapped?() 
+        }
+        restartButton.position = CGPoint(
+            x: -20 - buttonSize.height / 2,
+            y: -size.height / 2 + pxToPoints(576) + buttonSize.height / 2
+        )
+        restartButton.zPosition = 103
+        addChild(restartButton)
+        
+        menuButton = SKButton(imageNamed: "goToMenu", size: buttonSize) { [weak self] in
+            self?.onRestartButtonTapped?()
+        }
+        menuButton.position = CGPoint(
+            x: 20 + buttonSize.height / 2,
+            y: -size.height / 2 + pxToPoints(576) + buttonSize.height / 2
+        )
+        menuButton.zPosition = 103
+        addChild(menuButton)
+        
+        
+        
+        
     }
     
     required init?(coder aDecoder: NSCoder) {

@@ -30,11 +30,11 @@ class GameScene: SKScene {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard !isGamePaused else { return }
         guard let touch = touches.first else { return }
-            let location = touch.location(in: self)
-            guard let node = nodes(at: location).first as? SKSpriteNode,
-                  let index = Int(node.name ?? "") else { return }
-
-            viewModel.handleCardTap(at: index)
+        let location = touch.location(in: self)
+        guard let node = nodes(at: location).first as? SKSpriteNode,
+              let index = Int(node.name ?? "") else { return }
+        
+        viewModel.handleCardTap(at: index)
     }
     
     func showWin() {
@@ -43,10 +43,38 @@ class GameScene: SKScene {
         
         let overlay = WinOverlayNode(size: size, moves: viewModel.moves, timeElapsed: infoBackground.timeLabel.text ?? "00:00")
         addChild(overlay)
+        
+        overlay.onRestartButtonTapped = { [weak self] in
+            self?.restartGame()
+        }
+        
+        overlay.backToMenuButtonTapped = { [weak self] in
+            self?.backToMenu()
+        }
+    }
+    
+    func showSettings() {
+        
+        let settings = SettingsNote(size: size)
+        addChild(settings)
+        
+        settings.onVolumeButtonTapped = { [weak self] in
+            
+        }
+        
+        settings.onVibroButtonTapped = { [weak self] in
+            
+        }
+        
+        settings.continueGameButtonTapped = { [weak self] in
+            self?.togglePause()
+        }
+        
+        togglePause()
     }
     
     deinit {
-       
+        
         print("GameScene DEINIT — сцена удалена из памяти ✅")
     }
 }
@@ -62,8 +90,8 @@ extension GameScene {
         addChild(background)
         
         let buttonSize = CGSize(width: pxToPoints(121), height: pxToPoints(121))
-        settingsButton = SKButton(imageNamed: "Settings", size: buttonSize) {
-            print("Кнопка нажата")
+        settingsButton = SKButton(imageNamed: "Settings", size: buttonSize) { [weak self] in
+            self?.showSettings()
         }
         settingsButton.position = CGPoint(
             x: -size.width / 2 + pxToPoints(60) + buttonSize.width / 2,
@@ -81,8 +109,8 @@ extension GameScene {
         )
         addChild(pauseButton)
         
-        backButton = SKButton(imageNamed: "Left", size: buttonSize) {
-            print("Кнопка нажата")
+        backButton = SKButton(imageNamed: "Left", size: buttonSize) { [weak self] in
+            self?.backToMenu()
         }
         backButton.position = CGPoint(
             x: 0,
@@ -152,9 +180,9 @@ extension GameScene {
             self?.flipCardOpen(at: index)
         }
         
-//        viewModel.onMatch = { [weak self] _, _ in
-//
-//        }
+        //        viewModel.onMatch = { [weak self] _, _ in
+        //
+        //        }
         
         viewModel.onMismatch = { [weak self] first, second in
             self?.isUserInteractionEnabled = false
@@ -176,7 +204,7 @@ extension GameScene {
 }
 
 extension GameScene {
-   private func flipCardOpen(at index: Int) {
+    private func flipCardOpen(at index: Int) {
         let card = viewModel.cards[index]
         let node = card.node
         
@@ -205,7 +233,7 @@ extension GameScene {
         viewModel.cards[index].isFlipped = true
     }
     
-   private func flipCardClose(at index: Int) {
+    private func flipCardClose(at index: Int) {
         let node = viewModel.cards[index].node
         
         let flipHalf = SKAction.scaleX(to: 0, duration: 0.2)
@@ -225,6 +253,9 @@ extension GameScene {
         isGamePaused.toggle()
         self.isPaused = isGamePaused
         viewModel.setPause(isGamePaused)
+        
+        let newTextureName = isGamePaused ? "Play" : "Pause"
+        pauseButton.texture = SKTexture(imageNamed: newTextureName)
     }
     
     func restartGame() {
@@ -233,6 +264,15 @@ extension GameScene {
             newScene.scaleMode = .resizeFill
             newScene.anchorPoint = CGPoint(x: 0.5, y: 0.5)
             view.presentScene(newScene, transition: SKTransition.fade(withDuration: 0.5))
+        }
+    }
+    
+    func backToMenu() {
+        if let view = self.view {
+            let newScene = MainScene(size: view.bounds.size)
+            newScene.scaleMode = .resizeFill
+            newScene.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+            view.presentScene(newScene, transition: SKTransition.push(with: .right, duration: 0.5))
         }
     }
 }

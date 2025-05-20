@@ -10,6 +10,7 @@ import SpriteKit
 class SKButton: SKSpriteNode {
     
     private var action: (() -> Void)?
+    private var labelNode: SKLabelNode?
 
     init(imageNamed: String, size: CGSize, action: @escaping () -> Void) {
         let texture = SKTexture(imageNamed: imageNamed)
@@ -17,6 +18,34 @@ class SKButton: SKSpriteNode {
         self.action = action
         isUserInteractionEnabled = true
     }
+    
+    convenience init(imageNamed: String,
+                        size: CGSize,
+                        text: String? = nil,
+                        fontName: String = "Helvetica",
+                        fontSize: CGFloat = 20,
+                        fontColor: SKColor = .white,
+                        action: @escaping () -> Void) {
+        self.init(imageNamed: imageNamed, size: size, action: action)
+           
+           self.action = action
+           isUserInteractionEnabled = true
+           
+           if let text = text {
+               let label = SKLabelNode(text: text)
+               label.fontName = fontName
+               label.fontSize = fontSize
+               label.fontColor = fontColor
+               label.verticalAlignmentMode = .center
+               label.horizontalAlignmentMode = .center
+               label.position = CGPoint(x: 0, y: 0)
+               label.zPosition = 1
+               addChild(label)
+               labelNode = label
+           }
+       }
+    
+    
 
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
